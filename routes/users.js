@@ -45,10 +45,5 @@ function readDataFromCSV(filePath )
 
 }
 
-
-
-app.listen(4000,() => {
-  console.log('Server up and running');
-})
   
 module.exports = router;
