@@ -1,20 +1,54 @@
-const express = require('express');
-var router = express.Router();
-var fs = require("fs");
-//const csvParser = require('csv-parser');
+var express = require('express');
+var fs = require('fs');
+var {parse} = require('csv-parse')
+var app = express();
 
-const filepath = "./data/Student_grades.csv"
+app.get("/students" , async( req , res) => {
+      const data = await readDataFromCSV('./data/Student_grades.csv');
+      res.send(data);
+})
 
-router.get("/", (req, res) => {
-    res.json({ message: "Welcome to Students database !!!" });
-  });
+app.get("/studentssortByAge"  ,async( req ,res) => {
+    const data = await readDataFromCSV('./data/Student_grades.csv');
+    data.sort(compareAgeAndSort);
+    res.send(data);
+})
+
+app.get("/calculatestudentAvg" , async( req ,res) => {
+    const data = await readDataFromCSV( './data/Student_grades.csv' )
+    var length = data.length;
+    const totalGrades = data.reduce((sum, student) => sum + parseInt(student.Grade), 0);
+    var av =totalGrades/parseInt(length);
+    res.send(`Average is ${av}`);
+})
 
 
-  router.get("/Studentgrades", (req, res) => {
-    fs.readFile("./data/Student_grades.json", (err, data) => {
-      var buf = Buffer.from(data);
-      res.send({ Students: JSON.parse(buf.toString()) });
-    });
-  });
+
+
+function compareAgeAndSort(stud1 , stud2){
+    if( stud1.Age<stud2.Age) return -1;
+    if( stud1.Age>stud2.Age) return 1;
+    else  return 0;
+}
+
+
+function readDataFromCSV(filePath )
+{
+    return new Promise( (resolve , reject) => {
+    fs.readFile( filePath , ( err , data) => {
+           parse( data  , { columns:true} , ( err , rows) => {
+           resolve( rows);
+     })
+        })
+
+    })
+
+}
+
+
+
+app.listen(4000,() => {
+  console.log('Server up and running');
+})
   
 module.exports = router;
